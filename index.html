@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Cronograma Gantt</title>
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      background-color: #f4f4f4;
+      text-align: center;
+    }
+    #gantt_chart {
+      margin-top: 40px;
+      width: 100%;
+      height: 800px;
+    }
+    #reloadBtn {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1em;
+}
+#reloadBtn:hover {
+  background-color: #0056b3;
+}
+
+  </style>
+</head>
+<body>
+
+  <h1>Cronograma Gantt - Proyecto Auca Sur y Culebra</h1>
+
+  <button onclick="drawChart()" id="reloadBtn">🔄 Recargar Cronograma</button>
+
+  <div id="gantt_chart"></div>
+  <script>
+    google.charts.load('current', {'packages':['gantt']});
+    google.charts.setOnLoadCallback(drawChart);
+
+    async function drawChart() {
+      const response = await fetch('https://docs.google.com/spreadsheets/d/e/2PACX-1vSXMsoaOAWVi_3187teWKGrIrmwwIOQGvHQtZrbHGAXwGTlTjVQkcOzWFV5ywUYbsh74PlIAawueM--/pub?output=csv');
+      const dataText = await response.text();
+      const rows = dataText.split('\n').slice(1); // skip header
+      
+      const dataTable = new google.visualization.DataTable();
+      dataTable.addColumn('string', 'Task ID');
+      dataTable.addColumn('string', 'Task Name');
+      dataTable.addColumn('string', 'Resource');
+      dataTable.addColumn('date', 'Start Date');
+      dataTable.addColumn('date', 'End Date');
+      dataTable.addColumn('number', 'Duration');
+      dataTable.addColumn('number', 'Percent Complete');
+      dataTable.addColumn('string', 'Dependencies');
+
+      rows.forEach(row => {
+        const [id, name, resource, startStr, endStr, percentStr, dependencies] = row.split(',');
+        if (!id) return; // skip empty rows
+        const startDate = new Date(startStr.trim());
+        const endDate = new Date(endStr.trim());
+        const percent = parseFloat(percentStr.trim()) || 0;
+        dataTable.addRow([
+          id.trim(),
+          name.trim(),
+          resource.trim(),
+          startDate,
+          endDate,
+          null, // Duration is auto-calculated from start/end
+          percent,
+          dependencies ? dependencies.trim() : null
+        ]);
+      });
+
+      const chart = new google.visualization.Gantt(document.getElementById('gantt_chart'));
+      chart.draw(dataTable, {
+        height: 800,
+        gantt: {
+          trackHeight: 40
+        }
+      });
+    }
+  </script>
+
+</body>
+</html>
