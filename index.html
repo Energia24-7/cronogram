@@ -75,7 +75,21 @@
           dependencies ? dependencies.trim() : null
         ]);
       });
+    const options = {
+      height: 800,
+      gantt: {
+        trackHeight: 40,
+        innerGridTrack:       {fill: '#ffffff'},
+        innerGridDarkTrack:   {fill: '#e9e9e9'},
+        innerGridMinorStroke: '#bdbdbd',
+        innerGridMinorStrokeWidth: 1,
+        innerGridMinorStrokeOpacity: 1
+      }
+    };
 
+
+
+      
       const chart = new google.visualization.Gantt(document.getElementById('gantt_chart'));
       chart.draw(dataTable, {
         height: 800,
